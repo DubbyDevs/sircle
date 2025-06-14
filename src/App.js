@@ -6,31 +6,39 @@ import ContactForm from "./components/ContactForm";
 import Videos from "./components/Videos";
 import Music from "./components/Music";
 
+// Orbitron Google Font
+const orbitronFontLink = "https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap";
+
 const images = ["/bg1.jpg", "/bg2.jpg", "/bg3.jpg"];
 const fadeTime = 28; // Set to 28 for production, or 5-10 for testing
-const tickerText = "";
-const tickerTypeSpeed = 50; // ms per character
-const tickerPause = 20000; // ms (20s hidden between repeats)
 
-const buttonStyle = (active) => ({
+// NO boxShadow here; handled by CSS animation only!
+const buttonStyle = {
   border: "none",
   borderRadius: "50%",
   width: 56,
   height: 56,
   background: "rgba(0,0,0,0.55)",
-  color: "#fff",
-  fontSize: 32,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  fontWeight: 700,
-  boxShadow: active ? "0 0 18px 7px #00ffe0cc" : "none",
   outline: "none",
   cursor: "pointer",
-  transition: "box-shadow 0.18s",
-  fontFamily: "inherit",
-  WebkitTapHighlightColor: "transparent"
-});
+  transition: "box-shadow 0.5s",
+  fontFamily: "'Orbitron', 'Poppins', 'Segoe UI', Arial, sans-serif"
+};
+
+const gradientTextStyle = {
+  background: "linear-gradient(90deg, #e0e0e0 0%, #fff 55%, #ededed 100%)",
+  WebkitBackgroundClip: "text",
+  WebkitTextFillColor: "transparent",
+  fontFamily: "'Orbitron', 'Poppins', 'Segoe UI', Arial, sans-serif",
+  fontWeight: 600,
+  letterSpacing: "0.02em",
+  fontSize: 30,
+  userSelect: "none",
+  textAlign: "center"
+};
 
 export default function App() {
   const [curr, setCurr] = useState(0);
@@ -45,12 +53,7 @@ export default function App() {
   // Contact modal state
   const [showContact, setShowContact] = useState(false);
 
-  // Ticker effect state
-  const [tickerVisible, setTickerVisible] = useState(false);
-  const [tickerIdx, setTickerIdx] = useState(0);
-  const tickerTimerRef = useRef();
-
-  // Fade logic (your original, working version)
+  // Fade logic (original working version)
   useEffect(() => {
     setPrev(null);
     setFading(true);
@@ -69,42 +72,6 @@ export default function App() {
     };
     // eslint-disable-next-line
   }, [curr]);
-
-  // Ticker effect: typewriter & repeat logic
-  useEffect(() => {
-    if (!audioPlaying || !showHeader) {
-      setTickerVisible(false);
-      setTickerIdx(0);
-      clearTimeout(tickerTimerRef.current);
-      return;
-    }
-    setTickerVisible(true);
-    setTickerIdx(0);
-
-    function showTicker(i) {
-      if (!audioPlaying || !showHeader) return;
-      if (i <= tickerText.length) {
-        setTickerIdx(i);
-        tickerTimerRef.current = setTimeout(() => showTicker(i + 1), tickerTypeSpeed);
-      } else {
-        // Done typing, hide for tickerPause ms, then repeat
-        setTimeout(() => {
-          setTickerVisible(false);
-          setTimeout(() => {
-            if (audioPlaying && showHeader) {
-              setTickerIdx(0);
-              setTickerVisible(true);
-              showTicker(1);
-            }
-          }, 400); // small gap so it's not instant
-        }, tickerPause);
-      }
-    }
-    showTicker(1);
-
-    return () => clearTimeout(tickerTimerRef.current);
-    // eslint-disable-next-line
-  }, [audioPlaying, showHeader]);
 
   // Nav functions
   const handleHideHeader = (e) => {
@@ -128,6 +95,9 @@ export default function App() {
 
   return (
     <Router>
+      {/* Import Orbitron font */}
+      <link rel="stylesheet" href={orbitronFontLink} />
+
       <div
         style={{
           width: "100vw", height: "100vh",
@@ -183,48 +153,28 @@ export default function App() {
             {/* O button - left */}
             <button
               onClick={handleHideHeader}
-              style={{ ...buttonStyle(true), marginLeft: 28, marginTop: 4 }}
+              style={{
+                ...buttonStyle,
+                marginLeft: 28, marginTop: 4,
+                animation: showHeader ? "glow 16s ease-in-out infinite" : "none"
+              }}
               aria-label="Hide menu"
-            >O</button>
-            {/* News ticker (center, typewriter style) when music is playing */}
-            <div style={{
-              flex: 1,
-              textAlign: "center",
-              position: "relative",
-              pointerEvents: "none",
-              height: 40,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontFamily: "inherit"
-            }}>
-              {audioPlaying && tickerVisible && (
-                <span
-                  style={{
-                    color: "#fff",
-                    fontWeight: 600,
-                    fontSize: 22,
-                    letterSpacing: "0.01em",
-                    textShadow: "0 0 7px #000, 0 0 10px #00ffe044",
-                    fontFamily: "inherit"
-                  }}
-                >
-                  {tickerText.slice(0, tickerIdx)}
-                  <span style={{
-                    display: "inline-block",
-                    width: "1ch",
-                    opacity: tickerIdx < tickerText.length ? 1 : 0
-                  }}>|</span>
-                </span>
-              )}
-            </div>
+            >
+              <span style={gradientTextStyle}>O</span>
+            </button>
+            {/* (middle empty for future music info etc) */}
+            <div style={{ flex: 1 }} />
             {/* Play button - right */}
             <button
               onClick={handlePlay}
-              style={{ ...buttonStyle(audioPlaying), marginRight: 28, marginTop: 4 }}
+              style={{
+                ...buttonStyle,
+                marginRight: 28, marginTop: 4,
+                animation: audioPlaying && showHeader ? "glow 16s ease-in-out infinite" : "none"
+              }}
               aria-label={audioPlaying ? "Pause" : "Play"}
             >
-              {audioPlaying ? "⏸" : "▶"}
+              <span style={gradientTextStyle}>{audioPlaying ? "⏸" : "▶"}</span>
             </button>
           </div>
         )}
@@ -276,7 +226,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Audio player (MUST always be rendered, or play won’t work) */}
+        {/* Audio player */}
         <AudioPlayer
           playing={audioPlaying}
           setPlaying={setAudioPlaying}
@@ -292,6 +242,17 @@ export default function App() {
             <Route path="/contact" element={<ContactForm />} />
           </Routes>
         </div>
+
+        {/* Animated glow keyframes */}
+        <style>
+          {`
+            @keyframes glow {
+              0%   { box-shadow: 0 0 15px 7px #00ffe0cc; }
+              50%  { box-shadow: 0 0 27px 11px #ff2ee8cc; }
+              100% { box-shadow: 0 0 15px 7px #00ffe0cc; }
+            }
+          `}
+        </style>
       </div>
     </Router>
   );

@@ -1,12 +1,17 @@
 import React, { useState } from "react";
 
+const FORM_ENDPOINT = "https://formspree.io/f/mqabbplz";
+const teal = "#00ffe0";
+
+const placeholderStyle = `
+  ::placeholder { color: ${teal}; opacity: 1; }
+  input, textarea { color-scheme: dark; }
+`;
+
 export default function ContactForm() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Your Formspree endpoint
-  const FORM_ENDPOINT = "https://formspree.io/f/mqabbplz";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,9 +48,11 @@ export default function ContactForm() {
         gap: 20,
         minWidth: 300,
         color: "#fff",
+        fontFamily: "Poppins, Inter, Segoe UI, Arial, sans-serif"
       }}
       autoComplete="off"
     >
+      <style>{placeholderStyle}</style>
       <label style={{ fontWeight: 700, fontSize: 18 }}>Contact Drum Sircle</label>
       <input
         type="text"
@@ -54,7 +61,7 @@ export default function ContactForm() {
         placeholder="Your Name"
         style={{
           background: "rgba(0,0,0,0.6)",
-          border: "1.5px solid #00ffe0",
+          border: `1.5px solid ${teal}`,
           color: "#fff",
           borderRadius: 9,
           padding: "12px 15px",
@@ -70,7 +77,7 @@ export default function ContactForm() {
         placeholder="Your Email"
         style={{
           background: "rgba(0,0,0,0.6)",
-          border: "1.5px solid #00ffe0",
+          border: `1.5px solid ${teal}`,
           color: "#fff",
           borderRadius: 9,
           padding: "12px 15px",
@@ -86,7 +93,7 @@ export default function ContactForm() {
         placeholder="Your Message (max 1000 characters)"
         style={{
           background: "rgba(0,0,0,0.6)",
-          border: "1.5px solid #00ffe0",
+          border: `1.5px solid ${teal}`,
           color: "#fff",
           borderRadius: 9,
           padding: "12px 15px",
@@ -99,7 +106,7 @@ export default function ContactForm() {
         type="submit"
         disabled={loading}
         style={{
-          background: "#00ffe0",
+          background: teal,
           color: "#111",
           border: "none",
           borderRadius: 22,
@@ -114,6 +121,22 @@ export default function ContactForm() {
         {loading ? "Sending..." : sent ? "Sent! Thank you!" : "Send"}
       </button>
       {error && <div style={{ color: "#f33", marginTop: 4 }}>{error}</div>}
+
+      {/* Socials */}
+      <div style={{display: "flex", gap: 20, justifyContent: "center", marginTop: 22}}>
+        <a href="https://instagram.com/DrumSircle" target="_blank" rel="noopener noreferrer"
+          style={{color: "#00ffe0", fontSize: 23, textDecoration: "none", display: "flex", alignItems: "center", gap: 6}}
+          aria-label="Instagram"
+        >
+          <span style={{fontSize: 27}}>📷</span> IG
+        </a>
+        <a href="https://youtube.com/DrumSircle" target="_blank" rel="noopener noreferrer"
+          style={{color: "#ff2ee8", fontSize: 23, textDecoration: "none", display: "flex", alignItems: "center", gap: 6}}
+          aria-label="YouTube"
+        >
+          <span style={{fontSize: 27}}>▶️</span> YT
+        </a>
+      </div>
     </form>
   );
 }
