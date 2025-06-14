@@ -1,89 +1,103 @@
 import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
-import Button from 'react-bootstrap/Button';
 
-const navItems = [
-  { label: "Home", path: "/" },
-  { label: "Videos", path: "/videos" },
-  { label: "Music", path: "/music" },
-  { label: "Contact", path: "/contact" },
-];
-
-function Header({ onHide, audioPlaying, setAudioPlaying }) {
-  const navigate = useNavigate();
-  const location = useLocation();
-
+function Header({ onHide, audioPlaying, onPlay, showSongBox, trackTitle, onPrevSong, onNextSong }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -40 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -32 }}
-      transition={{ duration: 0.7, type: "spring" }}
+    <div
       style={{
         position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        zIndex: 40,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "rgba(10,10,18,0.22)",
-        boxShadow: "0 4px 22px #0008",
-        padding: "12px 0"
+        top: 0, left: 0, width: "100vw", zIndex: 100,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        background: "rgba(0,0,0,0.38)", boxShadow: "0 4px 20px #00ffe033",
+        padding: "16px 0"
       }}
     >
-      <nav className="d-flex gap-4 align-items-center">
-        {navItems.map((item, i) => (
-          <Button
-            key={i}
-            variant={location.pathname === item.path ? "info" : "outline-light"}
-            onClick={() => navigate(item.path)}
-            style={{
-              fontSize: "1.16rem",
-              fontWeight: "bold",
-              background: location.pathname === item.path ? "#0ff8" : undefined,
-              border: "none",
-              boxShadow: location.pathname === item.path ? "0 0 12px #0ff" : undefined,
-              marginRight: 14,
-            }}
-          >
-            {item.label}
-          </Button>
-        ))}
-        <Button
-          variant={audioPlaying ? "danger" : "success"}
-          onClick={() => setAudioPlaying((v) => !v)}
+      {/* O button - top left */}
+      <button
+        onClick={e => { e.stopPropagation(); onHide(); }}
+        style={{
+          background: "none",
+          border: "none",
+          color: "#fff",
+          fontSize: 22,
+          marginLeft: 28,
+          cursor: "pointer"
+        }}
+      >
+        O
+      </button>
+
+      {/* Music box - center, only if music playing */}
+      {showSongBox && (
+        <div
           style={{
-            fontSize: "1.15rem",
-            fontWeight: "bold",
-            width: 54,
-            height: 44,
-            borderRadius: "1em",
-            marginRight: 14,
-            boxShadow: audioPlaying ? "0 0 16px #f06" : "0 0 8px #0f08",
-          }}
-        >
-          {audioPlaying ? "Pause" : "Play"}
-        </Button>
-        <span
-          onClick={onHide}
-          style={{
-            fontSize: "2.1rem",
+            background: "rgba(0,0,0,0.5)",
             color: "#fff",
-            cursor: "pointer",
-            marginLeft: 22,
-            textShadow: "0 0 16px #0ff, 0 0 12px #111",
-            userSelect: "none",
-            letterSpacing: "2px"
+            padding: "9px 26px",
+            borderRadius: "15px",
+            boxShadow: "0 0 10px #00ffe066",
+            fontSize: 15,
+            fontWeight: 400,
+            fontcolor: "#00ffe066",
+            letterSpacing: "0.04em",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px"
           }}
-          title="Hide menu"
         >
-          O
-        </span>
-      </nav>
-    </motion.div>
+          <button
+            onClick={e => { e.stopPropagation(); onPrevSong(); }}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#fff",
+              fontSize: 14,
+              cursor: "pointer",
+              textShadow: "0 0 7px #00ffe0",
+              marginRight: 5,
+              padding: "0 5px"
+            }}
+            aria-label="Previous"
+          >
+            &#60;
+          </button>
+          <span style={{ padding: "0 5px" }}>{trackTitle}</span>
+          <button
+            onClick={e => { e.stopPropagation(); onNextSong(); }}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#fff",
+              fontSize: 14,
+              cursor: "pointer",
+              textShadow: "0 0 7px #00ffe0",
+              marginLeft: 5,
+              padding: "0 5px"
+            }}
+            aria-label="Next"
+          >
+            &#62;
+          </button>
+        </div>
+      )}
+
+      {/* Play button - top right */}
+      <button
+        onClick={e => { e.stopPropagation(); onPlay(); }}
+        style={{
+          borderRadius: "50%",
+          width: 48, height: 48,
+          background: audioPlaying ? "#00ffe0" : "#111",
+          color: audioPlaying ? "#000" : "#fff",
+          border: "none",
+          fontSize: 24,
+          marginRight: 28,
+          boxShadow: audioPlaying ? "0 0 14px #00ffe099" : "0 0 7px #222",
+          cursor: "pointer"
+        }}
+      >
+        {audioPlaying ? "⏸" : "▶"}
+      </button>
+    </div>
   );
 }
 export default Header;
