@@ -1,38 +1,54 @@
-.App {
-  text-align: center;
+/* App.css */
+
+/* Optional: import a cool Google Font for EDM vibes */
+/* Example: Uncomment to use Orbitron
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+*/
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #000; /* fallback for all backgrounds */
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+body {
+  font-family: 'Orbitron', 'Segoe UI', Arial, Helvetica, sans-serif;
+  background: #000;
+  color: #fff;
+  /* Prevent horizontal scrollbars */
+  width: 100vw;
+  overflow-x: hidden;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+a {
+  color: #00ffe0;
+  opacity: 5%  ; /* Default link color */
+  text-decoration: none;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+a:hover {
+  text-decoration: underline;
 }
 
-.App-link {
-  color: #61dafb;
+::-webkit-scrollbar {
+  width: 8px;
+  background: #101010;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 8px;
+}
+
+.container, .container-fluid {
+  padding-top: 50px;
+}
+
+/* Responsive font scaling for headlines */
+h1, .display-1 {
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  text-shadow: 0 4px 14px #0ff4, 0 0 32px #0006;
 }
