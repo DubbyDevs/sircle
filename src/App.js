@@ -2,61 +2,46 @@ import React, { useState, useEffect, useRef } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Header from "./components/Header";
-import BackgroundTransition from "./components/BackgroundTransition";
 import AudioPlayer from "./components/AudioPlayer";
 import ContactForm from "./components/ContactForm";
 import Videos from "./components/Videos";
 import Music from "./components/Music";
 
+const images = ["/bg1.jpg", "/bg2.jpg", "/bg3.jpg"];
+const fadeTime = 28; // Set to 28 for real, or 5-10 for testing
 
-const bgImages = ["/bg1.jpg", "/bg2.jpg", "/bg3.jpg"];
-const fadeTime = 5; // Set to 5 for debugging, 28 for production
+export default function App() {
+  const [curr, setCurr] = useState(0);
+  const [prev, setPrev] = useState(null);
+  const [fading, setFading] = useState(true);
+  const intervalRef = useRef(null);
 
-function App() {
-  const [currIdx, setCurrIdx] = useState(0);
-  const [prevIdx, setPrevIdx] = useState(null);
-  const [showFade, setShowFade] = useState(false);
-
-  // Initial fade from black
-  const [firstLoad, setFirstLoad] = useState(true);
-
-  // --- Main Crossfade Logic ---
-  useEffect(() => {
-    let startTimer;
-    if (firstLoad) {
-      // Fade in from black to first image
-      setShowFade(true);
-      setPrevIdx(null);
-      startTimer = setTimeout(() => {
-        setShowFade(false);
-        setFirstLoad(false);
-        setPrevIdx(currIdx);
-      }, fadeTime * 1000);
-      return () => clearTimeout(startTimer);
-    }
-    // After initial, begin loop
-    if (!showFade && !firstLoad) {
-      startTimer = setTimeout(() => {
-        setPrevIdx(currIdx);
-        setCurrIdx((currIdx + 1) % bgImages.length);
-        setShowFade(true);
-      }, fadeTime * 1000);
-      return () => clearTimeout(startTimer);
-    }
-    if (showFade && !firstLoad) {
-      // After fade, hide the fading image
-      startTimer = setTimeout(() => {
-        setShowFade(false);
-      }, fadeTime * 1000);
-      return () => clearTimeout(startTimer);
-    }
-  }, [currIdx, showFade, firstLoad, bgImages.length]);
-
-  // Nav/audio/etc as before
+  // Nav/audio logic
   const [showHeader, setShowHeader] = useState(false);
   const [headerPinned, setHeaderPinned] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
 
+  // Fade logic
+  useEffect(() => {
+    setPrev(null);
+    setFading(true);
+    const initialFade = setTimeout(() => setFading(false), fadeTime * 1000);
+
+    intervalRef.current = setInterval(() => {
+      setPrev(curr);
+      setCurr(c => (c + 1) % images.length);
+      setFading(true);
+      setTimeout(() => setFading(false), fadeTime * 1000);
+    }, fadeTime * 1000);
+
+    return () => {
+      clearInterval(intervalRef.current);
+      clearTimeout(initialFade);
+    };
+    // eslint-disable-next-line
+  }, [curr]);
+
+  // Nav functions
   const handleToggleHeader = () => {
     if (showHeader) {
       setShowHeader(false);
@@ -67,6 +52,7 @@ function App() {
     }
   };
 
+  // Overlay for nav
   const overlayClick = () => {
     if (!showHeader) setShowHeader(true);
   };
@@ -83,29 +69,47 @@ function App() {
     // eslint-disable-next-line
   }, [revealSecret]);
 
-  // On first load, fade from black
-  const prevImg = firstLoad
-    ? null
-    : prevIdx !== null
-      ? bgImages[prevIdx]
-      : null;
-
   return (
     <Router>
-      <div style={{ width: "100vw", height: "100vh", overflow: "hidden", position: "relative" }}>
-        <BackgroundTransition
-          currentImg={bgImages[currIdx]}
-          prevImg={prevImg}
-          showFade={showFade || firstLoad}
-          fadeDuration={fadeTime}
+      <div style={{
+        width: "100vw", height: "100vh",
+        position: "fixed", top: 0, left: 0,
+        overflow: "hidden"
+      }}>
+        {/* Previous image fading out */}
+        <AnimatePresence>
+          {fading && prev !== null && (
+            <motion.div
+              key={images[prev] + "-fade"}
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: fadeTime, ease: "linear" }}
+              style={{
+                background: `url(${images[prev]}) center center / cover no-repeat`,
+                width: "100vw", height: "100vh",
+                position: "absolute", top: 0, left: 0, zIndex: 2
+              }}
+            />
+          )}
+        </AnimatePresence>
+        {/* Current image always visible */}
+        <div
+          style={{
+            background: `url(${images[curr]}) center center / cover no-repeat`,
+            width: "100vw", height: "100vh",
+            position: "absolute", top: 0, left: 0, zIndex: 1
+          }}
         />
+
+        {/* Header/Nav logic */}
         <AnimatePresence>
           {showHeader && (
             <Header
               onHide={handleToggleHeader}
               audioPlaying={audioPlaying}
               setAudioPlaying={setAudioPlaying}
-              setBgIdx={setCurrIdx}
+              setBgIdx={setCurr}
             />
           )}
         </AnimatePresence>
@@ -130,11 +134,14 @@ function App() {
             O
           </motion.div>
         )}
+
+        {/* Audio player floats at bottom right, global control */}
         <AudioPlayer
           playing={audioPlaying}
           setPlaying={setAudioPlaying}
           tracks={["/music1.mp3", "/music2.mp3"]}
         />
+
         {/* Secret scroll up area */}
         <div
           ref={secretRef}
@@ -163,6 +170,7 @@ function App() {
             }}
           />
         </div>
+        {/* Overlay to show nav bar, only visible before nav is shown */}
         {!showHeader && (
           <div
             style={{
@@ -178,6 +186,7 @@ function App() {
             onClick={overlayClick}
           />
         )}
+        {/* Routing for pages */}
         <div style={{ position: "relative", zIndex: 3, height: "100vh" }}>
           <Routes>
             <Route path="/videos" element={<Videos />} />
@@ -189,5 +198,3 @@ function App() {
     </Router>
   );
 }
-
-export default App;
