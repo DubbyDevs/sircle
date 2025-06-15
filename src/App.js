@@ -9,15 +9,15 @@ import Music from "./components/Music";
 // Orbitron Google Font
 const orbitronFontLink = "https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap";
 
-const images = ["/bg1.jpg", "/bg2.jpg", "/bg3.jpg"];
-const fadeTime = 28; // Set to 28 for production, or 5-10 for testing
+const images = ["/bg1.jpg", "/bg2.jpg", "/bg3.jpg", "/bg4.jpg", "/bg5.jpg"];
+const fadeTime = 28;
+const tracks = ["/music1.mp3", "/music2.mp3"]; // Add more as needed
 
-// NO boxShadow here; handled by CSS animation only!
 const buttonStyle = {
   border: "none",
   borderRadius: "50%",
-  width: 56,
-  height: 56,
+  width: 53, // 5% smaller
+  height: 53,
   background: "rgba(0,0,0,0.55)",
   display: "flex",
   alignItems: "center",
@@ -28,6 +28,16 @@ const buttonStyle = {
   fontFamily: "'Orbitron', 'Poppins', 'Segoe UI', Arial, sans-serif"
 };
 
+const arrowButtonStyle = {
+  ...buttonStyle,
+  width: 22,
+  height: 22,
+  fontSize: 14,
+  margin: 0,
+  minWidth: 0,
+  minHeight: 0
+};
+
 const gradientTextStyle = {
   background: "linear-gradient(90deg, #e0e0e0 0%, #fff 55%, #ededed 100%)",
   WebkitBackgroundClip: "text",
@@ -35,9 +45,13 @@ const gradientTextStyle = {
   fontFamily: "'Orbitron', 'Poppins', 'Segoe UI', Arial, sans-serif",
   fontWeight: 600,
   letterSpacing: "0.02em",
-  fontSize: 30,
+  fontSize: 27,
   userSelect: "none",
   textAlign: "center"
+};
+const gradientTextArrow = {
+  ...gradientTextStyle,
+  fontSize: 13
 };
 
 export default function App() {
@@ -53,7 +67,13 @@ export default function App() {
   // Contact modal state
   const [showContact, setShowContact] = useState(false);
 
-  // Fade logic (original working version)
+  // Audio track index
+  const [trackIdx, setTrackIdx] = useState(0);
+
+  // For double-click prev logic
+  const [lastPrevClick, setLastPrevClick] = useState(0);
+
+  // Fade logic
   useEffect(() => {
     setPrev(null);
     setFading(true);
@@ -85,7 +105,31 @@ export default function App() {
   };
   const handlePlay = (e) => {
     e?.stopPropagation?.();
-    setAudioPlaying(p => !p);
+    setAudioPlaying((p) => !p);
+  };
+
+  // Next/Prev logic
+  const handleNext = (e) => {
+    e?.stopPropagation?.();
+    if (tracks.length > 1 && trackIdx < tracks.length - 1) {
+      setTrackIdx(i => i + 1);
+      setAudioPlaying(false);
+      setTimeout(() => setAudioPlaying(true), 10);
+    }
+  };
+  const handlePrev = (e) => {
+    e?.stopPropagation?.();
+    const now = Date.now();
+    if (now - lastPrevClick < 1000 && tracks.length > 1 && trackIdx > 0) {
+      setTrackIdx(i => i - 1);
+      setAudioPlaying(false);
+      setTimeout(() => setAudioPlaying(true), 10);
+    } else {
+      setTrackIdx(i => i);
+      setAudioPlaying(false);
+      setTimeout(() => setAudioPlaying(true), 10);
+    }
+    setLastPrevClick(now);
   };
 
   // Overlay to show nav bar
@@ -133,48 +177,75 @@ export default function App() {
 
         {/* Nav/header bar */}
         {showHeader && (
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100vw",
-              height: 72,
-              background: "rgba(0,0,0,0.35)",
-              boxShadow: "0 4px 20px #00ffe033",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              zIndex: 100,
-              overflow: "hidden"
-            }}
-            onClick={e => e.stopPropagation()}
-          >
+          <>
             {/* O button - left */}
             <button
               onClick={handleHideHeader}
               style={{
                 ...buttonStyle,
-                marginLeft: 28, marginTop: 4,
+                position: "fixed",
+                top: 18,
+                left: 18,
+                zIndex: 110,
                 animation: showHeader ? "glow 16s ease-in-out infinite" : "none"
               }}
               aria-label="Hide menu"
             >
-              <span style={gradientTextStyle}>O</span>
+              <span style={gradientTextStyle}>0</span>
             </button>
-            {/* (middle empty for future music info etc) */}
-            <div style={{ flex: 1 }} />
             {/* Play button - right */}
             <button
               onClick={handlePlay}
               style={{
                 ...buttonStyle,
-                marginRight: 28, marginTop: 4,
+                position: "fixed",
+                top: 18,
+                right: 18,
+                zIndex: 110,
                 animation: audioPlaying && showHeader ? "glow 16s ease-in-out infinite" : "none"
               }}
               aria-label={audioPlaying ? "Pause" : "Play"}
             >
               <span style={gradientTextStyle}>{audioPlaying ? "⏸" : "▶"}</span>
+            </button>
+          </>
+        )}
+
+        {/* ARROW BUTTONS for prev/next song (lower left) */}
+        {showHeader && (
+          <div style={{
+            position: "fixed",
+            left: 20,
+            bottom: 20,
+            zIndex: 120,
+            display: "flex",
+            gap: 8
+          }}>
+            <button
+              onClick={handlePrev}
+              style={{
+                ...arrowButtonStyle,
+                animation: audioPlaying ? "glow 16s ease-in-out infinite" : "none",
+                opacity: audioPlaying ? 1 : 0.5
+              }}
+              aria-label="Previous song"
+              tabIndex={audioPlaying ? 0 : -1}
+              disabled={!audioPlaying}
+            >
+              <span style={gradientTextArrow}>◀</span>
+            </button>
+            <button
+              onClick={handleNext}
+              style={{
+                ...arrowButtonStyle,
+                animation: audioPlaying ? "glow 16s ease-in-out infinite" : "none",
+                opacity: audioPlaying ? 1 : 0.5
+              }}
+              aria-label="Next song"
+              tabIndex={audioPlaying ? 0 : -1}
+              disabled={!audioPlaying}
+            >
+              <span style={gradientTextArrow}>▶</span>
             </button>
           </div>
         )}
@@ -184,11 +255,11 @@ export default function App() {
           <button
             onClick={e => { e.stopPropagation(); setShowContact(true); }}
             style={{
-              position: "fixed", right: 36, bottom: 30, zIndex: 110,
+              position: "fixed", right: 34, bottom: 24, zIndex: 110,
               background: "rgba(0,0,0,0.75)", color: "#00ffe0", border: "none",
-              borderRadius: "24px", fontWeight: 700, fontSize: 19,
+              borderRadius: "24px", fontWeight: 700, fontSize: 17,
               letterSpacing: "0.03em", boxShadow: "0 0 11px #00ffe044",
-              padding: "10px 28px", cursor: "pointer"
+              padding: "7px 22px", cursor: "pointer"
             }}
           >Contact</button>
         )}
@@ -209,16 +280,16 @@ export default function App() {
                 position: "relative",
                 background: "#111",
                 borderRadius: 28,
-                padding: 40,
+                padding: 38,
                 boxShadow: "0 0 44px #00ffe033"
               }}
             >
               <button
                 onClick={() => setShowContact(false)}
                 style={{
-                  position: "absolute", top: 18, right: 24,
+                  position: "absolute", top: 12, right: 22,
                   background: "none", border: "none",
-                  color: "#fff", fontSize: 29, cursor: "pointer"
+                  color: "#fff", fontSize: 25, cursor: "pointer"
                 }}
               >✕</button>
               <ContactForm />
@@ -230,8 +301,9 @@ export default function App() {
         <AudioPlayer
           playing={audioPlaying}
           setPlaying={setAudioPlaying}
-          trackIdx={0}
-          tracks={["/music1.mp3", "/music2.mp3"]}
+          trackIdx={trackIdx}
+          setTrackIdx={setTrackIdx}
+          tracks={tracks}
         />
 
         {/* Routing for pages */}
@@ -247,9 +319,9 @@ export default function App() {
         <style>
           {`
             @keyframes glow {
-              0%   { box-shadow: 0 0 15px 7px #00ffe0cc; }
-              50%  { box-shadow: 0 0 27px 11px #ff2ee8cc; }
-              100% { box-shadow: 0 0 15px 7px #00ffe0cc; }
+              0%   { box-shadow: 0 0 10px 4px #00ffe0cc; }
+              50%  { box-shadow: 0 0 17px 8px #ff2ee8cc; }
+              100% { box-shadow: 0 0 10px 4px #00ffe0cc; }
             }
           `}
         </style>
